@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from app.schemas import UserInPost
+
 
 class PostListSchema(BaseModel):
     """Схема Списка Публикаций."""
@@ -11,6 +13,7 @@ class PostListSchema(BaseModel):
     created_at: datetime
     likes_count: int
     dislikes_count: int
+    user: UserInPost
 
     class Config:
         orm_mode = True
@@ -24,6 +27,7 @@ class PostDetailSchema(BaseModel):
     created_at: datetime
     likes_count: int
     dislikes_count: int
+    user: UserInPost
 
     class Config:
         orm_mode = True

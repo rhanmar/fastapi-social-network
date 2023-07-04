@@ -32,15 +32,6 @@ def login(user: UserLoginSchema, db: Session = Depends(get_db)) -> dict:
     return service.login(user, db)
 
 
-@router.get("/my_posts/")
-def my_posts(token: str = Header(), db: Session = Depends(get_db)):
-    """Публикации Пользователя."""
-    service = UserService()
-    user = service.get_login_user(token, db)
-    ...
-    return ["post1", "post2", user]
-
-
 @router.get("/me/", response_model=UserSchema)
 def my_profile(token: str = Header(), db: Session = Depends(get_db)) -> User:
     """Профиль Пользователя."""

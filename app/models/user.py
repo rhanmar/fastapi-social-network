@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy.orm import relationship
 
 from app.config.database import Base
 
@@ -14,3 +15,4 @@ class User(Base):
     email = Column(String, info={"verbose_name": "Электронная почта"})
     hashed_password = Column(String, info={"verbose_name": "Хэш пароля"})
     created_at = Column(DateTime, default=datetime.now)
+    posts = relationship("Post", back_populates="user")

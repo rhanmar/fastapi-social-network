@@ -3,6 +3,17 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+class UserInPost(BaseModel):
+    """Схема Пользователя в Публикации."""
+
+    id: int
+    username: str
+    email: str
+
+    class Config:
+        orm_mode = True
+
+
 class UserSchema(BaseModel):
     """Схема Пользователя."""
 
