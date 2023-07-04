@@ -10,7 +10,7 @@ class User(Base):
 
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, info={"verbose_name": "Никнейм"})
+    username = Column(String, unique=True, info={"verbose_name": "Никнейм"})
     email = Column(String, info={"verbose_name": "Электронная почта"})
-    # password = ...
+    hashed_password = Column(String, info={"verbose_name": "Хэш пароля"})
     created_at = Column(DateTime, default=datetime.now)
