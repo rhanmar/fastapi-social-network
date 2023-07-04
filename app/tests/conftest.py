@@ -77,3 +77,18 @@ def url_users_login():
 @pytest.fixture()
 def url_users_my_profile():
     return "/api/users/me/"
+
+
+@pytest.fixture()
+def url_users_my_posts():
+    return "/api/posts/mine/"
+
+
+@pytest.fixture()
+def url_users_like():
+    return "/api/posts/{}/like/"
+
+
+@pytest.fixture()
+def url_users_dislike():
+    return "/api/posts/{}/dislike/"
