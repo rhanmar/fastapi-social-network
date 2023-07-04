@@ -18,6 +18,13 @@ def users_list(db: Session = Depends(get_db)) -> list[User]:
     return service.get_all_users(db)
 
 
+@router.get("/{user_id}", response_model=UserSchema)
+def user_detail(user_id: int, db: Session = Depends(get_db)) -> User:
+    """Список Пользователей."""
+    service = UserService()
+    return service.get_user_by_id(user_id, db)
+
+
 @router.post("/register/")
 def create_user(user: UserRegisterSchema, db: Session = Depends(get_db)) -> dict:
     """Регистрация."""

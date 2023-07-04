@@ -12,5 +12,5 @@ app.include_router(posts_router)
 
 
 @app.get("/")
-def read_root():
+def root():
     return {"FastAPI": "Social Network"}

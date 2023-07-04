@@ -105,6 +105,17 @@ class UserService:
                 "info": f"Создан пользователь {user_db.id} {user_db.username}",
             }
 
-    def get_all_users(self, db: Session) -> list[User]:
+    @staticmethod
+    def get_all_users(db: Session) -> list[User]:
         """Получить всех Пользователей из БД."""
         return db.query(User).all()
+
+    @staticmethod
+    def get_user_by_id(user_id, db) -> User | dict:
+        user = db.query(User).filter_by(id=user_id).first()
+        if user:
+            return user
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Пользователь с ID {user_id} не найден",
+        )
