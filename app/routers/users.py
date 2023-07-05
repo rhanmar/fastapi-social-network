@@ -11,39 +11,42 @@ router = APIRouter(
 )
 
 
-def get_current_user(token: str = Header(), db: Session = Depends(get_db)) -> User:
+def get_user_service(db: Session = Depends(get_db)) -> UserService:
+    """Получить объект сервиса для работы с Пользователями."""
+    return UserService(db=db)
+
+
+def get_current_user(
+    token: str = Header(), user_service: UserService = Depends(get_user_service)
+) -> User:
     """Получить текущего Пользователя из JWT."""
-    users_service = UserService()
-    user = users_service.get_login_user(token, db)
-    return user
+    return user_service.get_login_user(token)
 
 
 @router.get("/", response_model=list[UserListSchema])
-def users_list(db: Session = Depends(get_db)) -> list[User]:
+def users_list(user_service: UserService = Depends(get_user_service)) -> list[User]:
     """Список Пользователей."""
-    service = UserService()
-    return service.get_all_users(db)
+    return user_service.get_all_users()
 
 
 @router.get("/{user_id}", response_model=UserSchema)
-def user_detail(user_id: int, db: Session = Depends(get_db)) -> User:
+def user_detail(user_id: int, user_service: UserService = Depends(get_user_service)) -> User:
     """Список Пользователей."""
-    service = UserService()
-    return service.get_user_by_id(user_id, db)
+    return user_service.get_user_by_id(user_id)
 
 
 @router.post("/register/")
-def create_user(user: UserRegisterSchema, db: Session = Depends(get_db)) -> dict:
+def create_user(
+    user: UserRegisterSchema, user_service: UserService = Depends(get_user_service)
+) -> dict:
     """Регистрация."""
-    service = UserService()
-    return service.create_user(user, db)
+    return user_service.create_user(user)
 
 
 @router.post("/login/")
-def login(user: UserLoginSchema, db: Session = Depends(get_db)) -> dict:
+def login(user: UserLoginSchema, user_service: UserService = Depends(get_user_service)) -> dict:
     """Логин / получение токена."""
-    service = UserService()
-    return service.login(user, db)
+    return user_service.login(user)
 
 
 @router.get("/me/", response_model=UserSchema)

@@ -3,13 +3,13 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException, status
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from sqlalchemy.orm import Session
 
 from app.models import User
 from app.schemas import UserLoginSchema, UserRegisterSchema
+from app.services import AppService
 
 
-class UserService:
+class UserService(AppService):
     """Сервис для работы с Пользователями."""
 
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -25,17 +25,16 @@ class UserService:
         """Получить хэш пароля."""
         return self.pwd_context.hash(password)
 
-    @staticmethod
-    def _get_user(db: Session, username: str) -> User | None:
+    def _get_user(self, username: str) -> User | None:
         """Получить Пользователя по никнейму."""
-        user = db.query(User).filter_by(username=username).first()
+        user = self.db.query(User).filter_by(username=username).first()
         if user:
             return user
         return None
 
-    def _authenticate_user(self, db: Session, username: str, password: str) -> User | bool:
+    def _authenticate_user(self, username: str, password: str) -> User | bool:
         """Аутентификация Пользователя по никнейму и паролю."""
-        user = self._get_user(db, username)
+        user = self._get_user(username)
         if not user:
             return False
         if not self._verify_password(password, user.hashed_password):
@@ -53,9 +52,9 @@ class UserService:
         encoded_jwt = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return encoded_jwt
 
-    def login(self, user: UserLoginSchema, db: Session) -> dict:
+    def login(self, user: UserLoginSchema) -> dict:
         """Логин / получение токена."""
-        user = self._authenticate_user(db, user.username, user.password)
+        user = self._authenticate_user(user.username, user.password)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -68,7 +67,7 @@ class UserService:
         )
         return {"access_token": access_token, "token_type": "bearer"}
 
-    def get_login_user(self, token: str, db: Session) -> User:
+    def get_login_user(self, token: str) -> User:
         """Получить Пользователя из JWT."""
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -82,14 +81,14 @@ class UserService:
                 raise credentials_exception
         except JWTError:
             raise credentials_exception
-        user = self._get_user(db, username=username)
+        user = self._get_user(username=username)
         if user is None:
             raise credentials_exception
         return user
 
-    def create_user(self, user: UserRegisterSchema, db: Session) -> dict:
+    def create_user(self, user: UserRegisterSchema) -> dict:
         """Создать Пользователя."""
-        user_db = db.query(User).filter_by(username=user.username).first()
+        user_db = self.db.query(User).filter_by(username=user.username).first()
         if user_db:
             return {"status": status.HTTP_400_BAD_REQUEST, "info": "Пользователь уже существует"}
         else:
@@ -98,21 +97,19 @@ class UserService:
                 email=user.email,
                 hashed_password=self._get_password_hash(user.password),
             )
-            db.add(user_db)
-            db.commit()
+            self.db.add(user_db)
+            self.db.commit()
             return {
                 "status": status.HTTP_201_CREATED,
                 "info": f"Создан пользователь {user_db.id} {user_db.username}",
             }
 
-    @staticmethod
-    def get_all_users(db: Session) -> list[User]:
+    def get_all_users(self) -> list[User]:
         """Получить всех Пользователей из БД."""
-        return db.query(User).all()
+        return self.db.query(User).all()
 
-    @staticmethod
-    def get_user_by_id(user_id, db) -> User | dict:
-        user = db.query(User).filter_by(id=user_id).first()
+    def get_user_by_id(self, user_id) -> User | dict:
+        user = self.db.query(User).filter_by(id=user_id).first()
         if user:
             return user
         raise HTTPException(
