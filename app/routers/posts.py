@@ -22,13 +22,13 @@ def my_posts(
     current_user: User = Depends(get_current_user),
     post_service: PostService = Depends(get_post_service),
 ) -> list[Post]:
-    """Публикации Пользователя."""
+    """Публикации авторизированного Пользователя."""
     return post_service.get_posts_for_user(current_user)
 
 
 @router.get("/", response_model=list[PostListSchema])
 def posts_list(post_service: PostService = Depends(get_post_service)) -> list[Post]:
-    """Список Публикаций."""
+    """Список всех Публикаций."""
     return post_service.get_all_posts()
 
 

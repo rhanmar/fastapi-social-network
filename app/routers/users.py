@@ -31,7 +31,7 @@ def users_list(user_service: UserService = Depends(get_user_service)) -> list[Us
 
 @router.get("/{user_id}", response_model=UserSchema)
 def user_detail(user_id: int, user_service: UserService = Depends(get_user_service)) -> User:
-    """Список Пользователей."""
+    """Детальная информация о Пользователе."""
     return user_service.get_user_by_id(user_id)
 
 
