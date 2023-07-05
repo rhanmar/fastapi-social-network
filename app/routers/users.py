@@ -11,6 +11,13 @@ router = APIRouter(
 )
 
 
+def get_current_user(token: str = Header(), db: Session = Depends(get_db)) -> User:
+    """Получить текущего Пользователя из JWT."""
+    users_service = UserService()
+    user = users_service.get_login_user(token, db)
+    return user
+
+
 @router.get("/", response_model=list[UserListSchema])
 def users_list(db: Session = Depends(get_db)) -> list[User]:
     """Список Пользователей."""
@@ -40,7 +47,6 @@ def login(user: UserLoginSchema, db: Session = Depends(get_db)) -> dict:
 
 
 @router.get("/me/", response_model=UserSchema)
-def my_profile(token: str = Header(), db: Session = Depends(get_db)) -> User:
+def my_profile(current_user: User = Depends(get_current_user)) -> User:
     """Профиль Пользователя."""
-    service = UserService()
-    return service.get_login_user(token, db)
+    return current_user

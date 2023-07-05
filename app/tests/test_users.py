@@ -1,3 +1,4 @@
+import pytest
 from fastapi import status
 
 from app.models import User
@@ -5,6 +6,7 @@ from app.models import User
 from .factories import user_factory
 
 
+@pytest.mark.users
 class TestUsers:
     """Тесты Пользователей."""
 
