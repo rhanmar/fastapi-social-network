@@ -17,32 +17,32 @@ class UserService:
     ALGORITHM = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-    def verify_password(self, plain_password: str, hashed_password: str) -> bool:
+    def _verify_password(self, plain_password: str, hashed_password: str) -> bool:
         """Верификация пароля."""
         return self.pwd_context.verify(plain_password, hashed_password)
 
-    def get_password_hash(self, password: str) -> str:
+    def _get_password_hash(self, password: str) -> str:
         """Получить хэш пароля."""
         return self.pwd_context.hash(password)
 
     @staticmethod
-    def get_user(db: Session, username: str) -> User | None:
+    def _get_user(db: Session, username: str) -> User | None:
         """Получить Пользователя по никнейму."""
         user = db.query(User).filter_by(username=username).first()
         if user:
             return user
         return None
 
-    def authenticate_user(self, db: Session, username: str, password: str) -> User | bool:
+    def _authenticate_user(self, db: Session, username: str, password: str) -> User | bool:
         """Аутентификация Пользователя по никнейму и паролю."""
-        user = self.get_user(db, username)
+        user = self._get_user(db, username)
         if not user:
             return False
-        if not self.verify_password(password, user.hashed_password):
+        if not self._verify_password(password, user.hashed_password):
             return False
         return user
 
-    def create_access_token(self, data: dict, expires_delta: timedelta | None = None) -> str:
+    def _create_access_token(self, data: dict, expires_delta: timedelta | None = None) -> str:
         """Создать JWT."""
         to_encode = data.copy()
         if expires_delta:
@@ -55,7 +55,7 @@ class UserService:
 
     def login(self, user: UserLoginSchema, db: Session) -> dict:
         """Логин / получение токена."""
-        user = self.authenticate_user(db, user.username, user.password)
+        user = self._authenticate_user(db, user.username, user.password)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -63,7 +63,7 @@ class UserService:
                 headers={"WWW-Authenticate": "Bearer"},
             )
         access_token_expires = timedelta(minutes=self.ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = self.create_access_token(
+        access_token = self._create_access_token(
             data={"sub": user.username}, expires_delta=access_token_expires
         )
         return {"access_token": access_token, "token_type": "bearer"}
@@ -82,7 +82,7 @@ class UserService:
                 raise credentials_exception
         except JWTError:
             raise credentials_exception
-        user = self.get_user(db, username=username)
+        user = self._get_user(db, username=username)
         if user is None:
             raise credentials_exception
         return user
@@ -96,7 +96,7 @@ class UserService:
             user_db = User(
                 username=user.username,
                 email=user.email,
-                hashed_password=self.get_password_hash(user.password),
+                hashed_password=self._get_password_hash(user.password),
             )
             db.add(user_db)
             db.commit()
